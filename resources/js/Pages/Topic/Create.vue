@@ -23,7 +23,7 @@ function submit() {
     form.post('/topics', {
         onSuccess: () => {
             form.reset();
-            successMessage.value = 'Topic created successfully!',
+            successMessage.value = 'Topic created successfully!'
         },
     });
 }
