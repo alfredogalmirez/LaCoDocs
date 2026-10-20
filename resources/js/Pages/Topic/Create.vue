@@ -31,7 +31,7 @@ function submit() {
 
 <template>
 
-    <Head :title="Create Topic" />
+    <Head title="Create Topic" />
     <AppLayout>
         <div class="max-w-5xl mx-auto p-6">
             <!-- Page heading -->
