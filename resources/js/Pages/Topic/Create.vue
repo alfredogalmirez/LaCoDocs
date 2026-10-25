@@ -1,156 +1,174 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 const props = defineProps({
-    topics: {
-        type: Array,
-        default: () => [],
-    },
+    topics: Array,
+    selectedTopicId: [String, Number],
 });
 
 const form = useForm({
-    name: '',
-    parent_id: '',
+    title: '',
+    topic_id: props.selectedTopicId || '',
+    content_blocks: {
+        blocks: [
+            { type: 'text', content: '', language: '' } // Start with at least one block
+        ]
+    }
 });
 
-const successMessage = ref('');
-
-function submit() {
-    successMessage.value = '';
-
-    form.post('/topics', {
-        onSuccess: () => {
-            form.reset();
-            successMessage.value = 'Topic created successfully!'
-        },
+// Add a new block of a specific type
+const addBlock = (type) => {
+    form.content_blocks.blocks.push({
+        type: type,
+        content: '',
+        language: type === 'code' || type === 'sql' ? 'php' : ''
     });
-}
+};
+
+// Remove a block by index
+const removeBlock = (index) => {
+    if (form.content_blocks.blocks.length > 1) {
+        form.content_blocks.blocks.splice(index, 1);
+    }
+};
+
+// Move a block up or down
+const moveBlock = (index, direction) => {
+    const newIndex = index + direction;
+    if (newIndex >= 0 && newIndex < form.content_blocks.blocks.length) {
+        const item = form.content_blocks.blocks.splice(index, 1)[0];
+        form.content_blocks.blocks.splice(newIndex, 0, item);
+    }
+};
+
+const submit = () => {
+    form.post('/docs');
+};
 </script>
 
 <template>
-
-    <Head title="Create Topic" />
+    <Head title="Create Document" />
+    
     <AppLayout>
-        <div class="max-w-5xl mx-auto p-6">
-            <!-- Page heading -->
-            <div class="mb-8">
-                <Link href="/docs" class="text-sm text-blue-600 hover:text-blue-800">
-                    &larr; Back to Documentation
-                </Link>
-
-                <h1 class="text-3xl font-bold text-gray-900 mt-4">
-                    Topic Management
-                </h1>
-
-                <p class="text-gray-500 mt-2">
-                    Organize your documentation into topics and subtopics.
-                </p>
+        <div class="max-w-4xl mx-auto p-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <Link href="/docs" class="text-sm text-indigo-600 hover:underline">&larr; Back to Documents</Link>
+                <h1 class="text-2xl font-bold text-gray-900">Create New Guide</h1>
             </div>
 
-            <!-- Create topic form -->
-            <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
-                <h2 class="text-xl font-semibold text-gray-900 mb-5">
-                    Create New Topic
-                </h2>
-
-                <form @submit.prevent="submit">
-                    <!-- Topic name -->
-                    <div class="mb-5">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Topic Name
-                        </label>
-
-                        <input id="name" v-model="form.name" type="text" placeholder="e.g. Frontend Development"
-                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
-
-                        <p v-if="form.errors.name" class="text-sm text-red-600 mt-2">
-                            {{ form.errors.name }}
-                        </p>
+            <form @submit.prevent="submit" class="space-y-6">
+                <!-- Document Title & Topic Selection -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Document Title</label>
+                        <input type="text" v-model="form.title" placeholder="e.g. Setting up Deployment Workflow" 
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                        <p v-if="form.errors.title" class="text-sm text-red-600 mt-1">{{ form.errors.title }}</p>
                     </div>
 
-                    <!-- Optional parent topic -->
-                    <div class="mb-5">
-                        <label for="parent_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Parent Topic
-                        </label>
-
-                        <select id="parent_id" v-model="form.parent_id"
-                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">None — Create a main topic</option>
-
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Topic / Folder</label>
+                        <select v-model="form.topic_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Choose a topic...</option>
                             <option v-for="topic in props.topics" :key="topic.id" :value="topic.id">
                                 {{ topic.name }}
                             </option>
                         </select>
+                        <p v-if="form.errors.topic_id" class="text-sm text-red-600 mt-1">{{ form.errors.topic_id }}</p>
+                    </div>
+                </div>
 
-                        <p class="text-xs text-gray-500 mt-2">
-                            Select a parent to create a subtopic.
-                        </p>
-
-                        <p v-if="form.errors.parent_id" class="text-sm text-red-600 mt-2">
-                            {{ form.errors.parent_id }}
-                        </p>
+                <!-- Dynamic Content Blocks Builder -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Content Blocks</h2>
+                        <span class="text-xs text-gray-500">Mix explanations, code, and steps freely</span>
                     </div>
 
-                    <!-- Success message -->
-                    <p v-if="successMessage" class="text-sm text-green-600 mb-4">
-                        {{ successMessage }}
+                    <!-- Loop through each block -->
+                    <div v-for="(block, index) in form.content_blocks.blocks" :key="index" 
+                        class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative space-y-3">
+                        
+                        <!-- Block Header Controls -->
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded uppercase">
+                                    {{ block.type }} block #{{ index + 1 }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <!-- Move Up -->
+                                <button type="button" @click="moveBlock(index, -1)" :disabled="index === 0"
+                                    class="p-1.5 text-gray-500 hover:bg-gray-100 rounded disabled:opacity-30" title="Move Up">
+                                    ▲
+                                </button>
+                                <!-- Move Down -->
+                                <button type="button" @click="moveBlock(index, 1)" :disabled="index === form.content_blocks.blocks.length - 1"
+                                    class="p-1.5 text-gray-500 hover:bg-gray-100 rounded disabled:opacity-30" title="Move Down">
+                                    ▼
+                                </button>
+                                <!-- Delete Block -->
+                                <button type="button" @click="removeBlock(index)" :disabled="form.content_blocks.blocks.length === 1"
+                                    class="p-1.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-30 ml-2" title="Delete Block">
+                                    ✕ Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Block Type Selector -->
+                        <div class="flex gap-2">
+                            <label class="text-xs font-semibold text-gray-500 self-center">Change Type:</label>
+                            <select v-model="block.type" class="text-xs rounded-lg border-gray-300 py-1">
+                                <option value="text">Explanation / Text</option>
+                                <option value="code">Code Snippet</option>
+                                <option value="sql">SQL Query</option>
+                                <option value="steps">Step-by-Step Instructions</option>
+                            </select>
+
+                            <input v-if="block.type === 'code' || block.type === 'sql'" 
+                                type="text" v-model="block.language" placeholder="language (e.g. php, bash)" 
+                                class="text-xs rounded-lg border-gray-300 py-1 px-2 w-36" />
+                        </div>
+
+                        <!-- Block Content Textarea -->
+                        <div>
+                            <textarea v-model="block.content" rows="4" 
+                                :placeholder="block.type === 'text' ? 'Write your explanation paragraph here...' : block.type === 'steps' ? '1. First step...\n2. Second step...' : 'Enter your code snippet here...'"
+                                class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-mono"></textarea>
+                        </div>
+                    </div>
+
+                    <p v-if="form.errors['content_blocks.blocks']" class="text-sm text-red-600">
+                        {{ form.errors['content_blocks.blocks'] }}
                     </p>
 
-                    <!-- Submit button -->
-                    <button type="submit" :disabled="form.processing"
-                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                        {{ form.processing ? 'Saving...' : 'Create Topic' }}
-                    </button>
-                </form>
-            </div>
-
-            <!-- Existing topics -->
-            <div class="bg-white border border-gray-200 rounded-xl p-6">
-                <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-xl font-semibold text-gray-900">
-                        Existing Topics
-                    </h2>
-
-                    <span class="text-sm text-gray-500">
-                        {{ props.topics.length }} topics
-                    </span>
-                </div>
-
-                <div v-if="props.topics.length === 0" class="text-gray-500 text-sm py-6 text-center">
-                    No topics yet. Create your first topic above.
-                </div>
-
-                <div v-else class="divide-y divide-gray-100">
-                    <div v-for="topic in props.topics" :key="topic.id" class="py-4 flex items-start gap-3">
-                        <div class="mt-1 text-gray-400">
-                            <span v-if="topic.parent_id">↳</span>
-                            <span v-else>📁</span>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900">
-                                {{ topic.name }}
-                            </p>
-
-                            <p class="text-sm text-gray-500 mt-1">
-                                <span v-if="topic.parent">
-                                    Subtopic of {{ topic.parent.name }}
-                                </span>
-                                <span v-else>
-                                    Main topic
-                                </span>
-                            </p>
-                        </div>
-
-                        <Link :href="`/topics/${topic.slug}`" class="text-sm text-blue-600 hover:text-blue-800">
-                            View
-                        </Link>
+                    <!-- Add Block Buttons -->
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <button type="button" @click="addBlock('text')" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                            + Add Text Block
+                        </button>
+                        <button type="button" @click="addBlock('code')" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                            + Add Code Block
+                        </button>
+                        <button type="button" @click="addBlock('sql')" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                            + Add SQL Block
+                        </button>
+                        <button type="button" @click="addBlock('steps')" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                            + Add Steps Block
+                        </button>
                     </div>
                 </div>
-            </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end pt-4">
+                    <button type="submit" :disabled="form.processing"
+                        class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow transition disabled:opacity-50">
+                        {{ form.processing ? 'Publishing...' : 'Publish Guide' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

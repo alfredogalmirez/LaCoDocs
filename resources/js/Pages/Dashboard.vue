@@ -31,18 +31,16 @@ const timeAgo = (dateString) => {
 </script>
 
 <template>
-
     <Head title="Dashboard" />
 
     <AppLayout>
-        <div class="max-w-6xl mx-auto space-y-8">
+        <div class="max-w-6xl mx-auto p-8 space-y-8">
 
             <!-- Welcome Header & Quick Actions -->
-            <div
-                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
-                        Welcome back, {{ user.name }}!
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900">
+                        Welcome back, {{ user.name }}
                     </h1>
                     <p class="text-sm text-gray-500 mt-1">
                         Here is an overview of your personal knowledge base and recent notes.
@@ -51,12 +49,8 @@ const timeAgo = (dateString) => {
 
                 <div class="flex items-center gap-3">
                     <Link href="/topics"
-                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition">
+                        class="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold uppercase tracking-wider rounded-xl transition shadow-sm">
                         Manage Topics
-                    </Link>
-                    <Link href="/docs/create"
-                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center gap-2">
-                        <span>+</span> New Document
                     </Link>
                 </div>
             </div>
@@ -64,9 +58,8 @@ const timeAgo = (dateString) => {
             <!-- Stats Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
-                    <div
-                        class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 text-gray-900 flex items-center justify-center font-bold border border-gray-200">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
@@ -78,9 +71,8 @@ const timeAgo = (dateString) => {
                 </div>
 
                 <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
-                    <div
-                        class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 text-gray-900 flex items-center justify-center font-bold border border-gray-200">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
@@ -96,16 +88,16 @@ const timeAgo = (dateString) => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 <!-- Left: Recent Documents (Takes up 2 columns) -->
-                <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-5">
-                        <h2 class="text-lg font-semibold text-gray-900">Recent Documents</h2>
-                        <Link href="/docs" class="text-xs text-indigo-600 font-medium hover:underline">
-                            View All →
+                <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        <h2 class="text-lg font-bold text-gray-900">Recent Documents</h2>
+                        <Link href="/docs" class="text-xs font-semibold text-gray-900 hover:text-gray-600 transition">
+                            View All &rarr;
                         </Link>
                     </div>
 
                     <div v-if="recentDocuments.length === 0"
-                        class="text-center py-10 text-gray-400 text-sm border border-dashed rounded-lg">
+                        class="text-center py-10 text-gray-400 text-xs border border-dashed border-gray-200 rounded-lg">
                         No documents created yet. Start writing your first guide!
                     </div>
 
@@ -114,18 +106,20 @@ const timeAgo = (dateString) => {
                             class="py-3.5 flex items-center justify-between gap-4">
                             <div class="min-w-0">
                                 <Link :href="`/docs/${doc.slug}`"
-                                    class="font-medium text-gray-900 hover:text-indigo-600 truncate block transition">
+                                    class="font-bold text-gray-900 text-sm hover:text-gray-600 truncate block transition">
                                     {{ doc.title }}
                                 </Link>
                                 <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
-                                    <span class="text-indigo-600 font-medium">{{ doc.topic?.name ?? 'General' }}</span>
+                                    <span class="text-gray-700 font-semibold uppercase tracking-wider text-[10px] bg-gray-100 px-2 py-0.5 rounded">
+                                        {{ doc.topic?.name ?? 'General' }}
+                                    </span>
                                     <span>&bull;</span>
                                     <span>Updated {{ timeAgo(doc.updated_at) }}</span>
                                 </p>
                             </div>
 
                             <Link :href="`/docs/${doc.slug}`"
-                                class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition shrink-0">
+                                class="text-xs px-3.5 py-1.5 border border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-900 hover:text-white transition shrink-0">
                                 Read
                             </Link>
                         </div>
@@ -133,35 +127,36 @@ const timeAgo = (dateString) => {
                 </div>
 
                 <!-- Right: Quick Topics Sidebar (Takes up 1 column) -->
-                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-5">
-                        <h2 class="text-lg font-semibold text-gray-900">Workspace Folders</h2>
-                        <Link href="/topics" class="text-xs text-indigo-600 font-medium hover:underline">
+                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        <h2 class="text-lg font-bold text-gray-900">Workspace Folders</h2>
+                        <Link href="/topics" class="text-xs font-semibold text-gray-900 hover:text-gray-600 transition">
                             Manage
                         </Link>
                     </div>
 
-                    <div v-if="topics.length === 0" class="text-center py-8 text-gray-400 text-sm">
+                    <div v-if="topics.length === 0" class="text-center py-8 text-gray-400 text-xs">
                         No topics found.
                     </div>
 
                     <div v-else class="space-y-2.5">
                         <Link v-for="topic in topics" :key="topic.id" :href="`/topics/${topic.slug}`"
-                            class="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition group">
+                            class="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition group">
 
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="text-gray-400 group-hover:text-indigo-600 transition">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                <span class="text-gray-400 group-hover:text-gray-900 transition">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                             d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                     </svg>
                                 </span>
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 truncate">{{
-                                    topic.name }}</span>
+                                <span class="text-xs font-bold text-gray-800 group-hover:text-gray-900 truncate">
+                                    {{ topic.name }}
+                                </span>
                             </div>
 
-                            <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                            <span class="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-semibold">
                                 {{ topic.documents_count ?? 0 }}
                             </span>
                         </Link>

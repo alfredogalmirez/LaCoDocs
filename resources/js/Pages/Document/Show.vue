@@ -1,10 +1,22 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps({
     document: Object
 });
+
+// Dynamically calculate the sequential step number for individual 'step' blocks
+const getStepNumber = (currentIndex) => {
+    let count = 0;
+    const blocks = props.document.content_blocks?.blocks || [];
+    for (let i = 0; i <= currentIndex; i++) {
+        if (blocks[i].type === 'step') {
+            count++;
+        }
+    }
+    return count;
+};
 
 const deleteDocument = () => {
     if (confirm(`Are you sure you want to delete "${props.document.title}"? This action cannot be undone.`)) {
@@ -13,26 +25,51 @@ const deleteDocument = () => {
         });
     }
 }
+
+const goBack = () => {
+    window.history.back();
+}
+
+const toggleStar = () => {
+    router.put(route('docs.star', props.document.slug), {}, {
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
-    <AppLayout>
-        <div class="p-8 max-w-4xl mx-auto bg-white min-h-screen border-x border-gray-200 shadow-sm">
-            <!-- Back Button -->
-            <div class="flex justify-between items-center mb-8 border-b pb-4">
-                <Link href="/docs" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2">
-                    &larr; Back to Documentation
-                </Link>
 
-                <div class="flex items-center gap-3">
+    <Head :title="document.title" />
+    <AppLayout>
+        <div class="p-8 max-w-4xl mx-auto bg-white min-h-screen border-x border-gray-200 shadow-sm space-y-6">
+
+            <!-- Back Button & Actions -->
+            <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                <button @click="goBack"
+                    class="text-xs font-semibold text-gray-500 hover:text-gray-900 transition flex items-center gap-1.5">
+                    &larr; Back
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <button @click="toggleStar" type="button"
+                        class="border border-gray-200 hover:bg-gray-100 text-gray-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        <svg class="w-4 h-4"
+                            :class="document.is_starred ? 'text-gray-950 fill-current' : 'text-gray-400'" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.690h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.690l1.519-4.674z" />
+                        </svg>
+                        {{ document.is_starred ? 'Starred' : 'Star Guide' }}
+                    </button>
+
                     <Link :href="route('docs.edit', document.slug)"
-                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                        class="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition">
                         Edit
                     </Link>
 
                     <button @click="deleteDocument" type="button"
-                        class="bg-red-50 hover:bg-red-100 text-red-600 flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold transition flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -42,53 +79,51 @@ const deleteDocument = () => {
             </div>
 
             <!-- Document Header -->
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ document.title }}</h1>
-            <p class="text-sm text-gray-500 mb-8 border-b pb-4">
-                Topic: {{ document.topic.name }}
-            </p>
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-1.5">{{ document.title }}</h1>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Topic: <span class="text-gray-700">{{ document.topic.name }}</span>
+                </p>
+            </div>
 
-            <!-- Document Content (Currently raw JSON) -->
-            <div class="space-y-6">
+            <!-- Document Content Blocks -->
+            <div class="space-y-6 pt-2">
 
                 <div v-for="(block, index) in document.content_blocks.blocks" :key="index">
 
                     <!-- TEXT -->
-                    <p v-if="block.type === 'text'" class="text-gray-700 whitespace-pre-wrap">
+                    <p v-if="block.type === 'text'" class="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
                         {{ block.content }}
                     </p>
 
                     <!-- CODE -->
-                    <div v-else-if="block.type === 'code'">
-                        <div class="text-sm text-gray-500 mb-2">
-                            {{ block.language }}
+                    <div v-else-if="block.type === 'code'" class="space-y-1.5">
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            Code ({{ block.language || 'snippet' }})
                         </div>
-
                         <pre
-                            class="bg-gray-900 text-white p-5 rounded-lg overflow-x-auto"><code>{{ block.content }}</code></pre>
+                            class="bg-gray-900 text-white p-4 rounded-xl overflow-x-auto text-xs font-mono shadow-sm"><code>{{ block.content }}</code></pre>
                     </div>
 
                     <!-- SQL -->
-                    <div v-else-if="block.type === 'sql'">
-                        <div class="text-sm text-gray-500 mb-2">
-                            SQL
+                    <div v-else-if="block.type === 'sql'" class="space-y-1.5">
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            SQL Query
                         </div>
-
                         <pre
-                            class="bg-gray-50 border border-gray-200 p-5 rounded-lg overflow-x-auto"><code>{{ block.content }}</code></pre>
+                            class="bg-gray-50 border border-gray-200 text-gray-800 p-4 rounded-xl overflow-x-auto text-xs font-mono shadow-sm"><code>{{ block.content }}</code></pre>
                     </div>
 
-                    <!-- STEPS -->
-                    <div v-else-if="block.type === 'steps'">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-3">
-                            Steps
-                        </h2>
-
-                        <ol class="list-decimal list-inside space-y-2 text-gray-700">
-                            <li v-for="(step, stepIndex) in block.content.split('\n').filter(line => line.trim())"
-                                :key="stepIndex">
-                                {{ step }}
-                            </li>
-                        </ol>
+                    <!-- STEP (Individual Interleaved Step) -->
+                    <div v-else-if="block.type === 'step'"
+                        class="flex items-start gap-3 bg-gray-50 border border-gray-200 p-4 rounded-xl shadow-sm">
+                        <span
+                            class="w-6 h-6 rounded-full bg-gray-900 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                            {{ getStepNumber(index) }}
+                        </span>
+                        <div class="text-gray-800 text-sm font-medium leading-relaxed self-center">
+                            {{ block.content }}
+                        </div>
                     </div>
 
                 </div>

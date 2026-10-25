@@ -20,8 +20,10 @@ class SearchController extends Controller
         
         if($query){
             $documents = $user->documents()
-                ->where('title', 'like', "%{$query}%")
-                ->orWhere('content_blocks', 'like', "%{$query}%")
+                ->where(function ($q) use ($query){
+                    $q->where('title', 'like', "%{$query}%")
+                    ->orWhere('content_blocks', 'like', "%{$query}%");
+                })
                 ->take(15)
                 ->get(['id', 'title', 'slug', 'topic_id', 'updated_at']);
                 

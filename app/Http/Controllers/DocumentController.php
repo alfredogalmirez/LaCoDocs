@@ -63,7 +63,7 @@ class DocumentController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'topic_id' => ['required', Rule::exists('topics', 'id')->where('user_id', Auth::id())],
             'content_blocks.blocks' => ['required', 'array', 'min:1'],
-            'content_blocks.blocks.*.type' => ['required', 'in:text,code,sql,steps'],
+            'content_blocks.blocks.*.type' => ['required', 'in:text,code,sql,step'],
             'content_blocks.blocks.*.content' => ['required ', 'string'],
             'content_blocks.blocks.*.language' => ['nullable', 'string', 'max:50'],
         ]);
@@ -89,7 +89,7 @@ class DocumentController extends Controller
             'topic_id' => ['required', Rule::exists('topics', 'id')->where('user_id', Auth::id()),],
             'content_blocks' => ['required', 'array'],
             'content_blocks.blocks' => ['required', 'array', 'min:1'],
-            'content_blocks.blocks.*.type' => ['required', 'in:text,code,sql,steps'],
+            'content_blocks.blocks.*.type' => ['required', 'in:text,code,sql,step'],
             'content_blocks.blocks.*.content' => ['required', 'string'],
             'content_blocks.blocks.*.language' => ['nullable', 'string', 'max:50'],
         ]);

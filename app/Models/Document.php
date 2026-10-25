@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
-    protected $fillable = ['topic_id', 'title', 'slug', 'content_blocks'];
+    protected $fillable = ['user_id','topic_id', 'title', 'is_starred', 'slug', 'content_blocks'];
 
     protected $casts = [
         'content_blocks' => 'array',
