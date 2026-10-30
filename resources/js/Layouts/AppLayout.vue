@@ -1,9 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { toast } from 'vue3-toastify';
 
 const page = usePage();
 const user = page.props.auth.user;
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    },
+    { deep: true, immediate: true}
+)
 
 const dropdownOpen = ref(false);
 const logoutForm = useForm({});

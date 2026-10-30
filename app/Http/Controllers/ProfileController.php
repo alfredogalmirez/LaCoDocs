@@ -44,7 +44,7 @@ class ProfileController extends Controller
         
         $user->save();
     
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('success', 'Profile updated successfuly!');
     }
 
     /**
@@ -65,6 +65,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return Redirect::to('/')->with('success', '');
     }
 }

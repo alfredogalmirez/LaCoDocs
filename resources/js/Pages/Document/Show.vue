@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { ref } from 'vue';
+import ConfirmModal from '@/Components/ConfirmModal.vue';
 
 const props = defineProps({
     document: Object
@@ -18,12 +20,14 @@ const getStepNumber = (currentIndex) => {
     return count;
 };
 
+const showDeleteModal = ref(false);
+
 const deleteDocument = () => {
-    if (confirm(`Are you sure you want to delete "${props.document.title}"? This action cannot be undone.`)) {
         router.delete(route('docs.destroy', props.document.slug), {
-            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal = false;   
+            }
         });
-    }
 }
 
 const goBack = () => {
@@ -67,7 +71,7 @@ const toggleStar = () => {
                         Edit
                     </Link>
 
-                    <button @click="deleteDocument" type="button"
+                    <button @click="showDeleteModal = true" type="button"
                         class="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold transition flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -75,6 +79,16 @@ const toggleStar = () => {
                         </svg>
                         Delete
                     </button>
+                    
+                    <ConfirmModal 
+                        :show="showDeleteModal"
+                        title="Delete Document"
+                        message="Are you sure you want to delete this document? All associated content will be permanently removed."
+                        comfirm-text="Yes, Delete"
+                        confirm-button-class="bg-red-600 hover:bg-red-700 text-white focus-ring-red-500"
+                        @cancel="showDeleteModal = false"
+                        @confirm="deleteDocument"
+                    />
                 </div>
             </div>
 

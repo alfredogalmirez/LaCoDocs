@@ -75,7 +75,8 @@ class DocumentController extends Controller
             'content_blocks' => $validated['content_blocks']
         ]);
 
-        return redirect()->route('docs.show', $document);
+        return redirect()->route('docs.show', $document)
+            ->with('success', 'Document has been created.');
     }
 
     public function update(Request $request, Document $document)
@@ -100,7 +101,8 @@ class DocumentController extends Controller
             'content_blocks' => $validated['content_blocks']
         ]);
 
-        return redirect()->route('docs.show', $document);
+        return redirect()->route('docs.show', $document)
+            ->with('success', 'Document updated successfully!');
     }
 
     public function destroy(Document $document)

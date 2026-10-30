@@ -26,10 +26,16 @@ class StarredController extends Controller
             abort(403);
         }
         
+        $isStarred = !$document->is_starred;
+        
         $document->update([
-            'is_starred' => !$document->is_starred
+            'is_starred' => $isStarred
         ]);
         
-        return back();
+        $message = $isStarred 
+            ? 'Document added to Favorites.'
+            : 'Document removed from starred';
+        
+        return back()->with('success', $message);
     }
 }
